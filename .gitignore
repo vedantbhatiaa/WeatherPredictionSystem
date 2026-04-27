@@ -1,0 +1,16 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+.ipynb_checkpoints/
+Dataset/
+data/
+images/
+*.png
+*.pkl
+*.csv
+staticfiles/
+Thumbs.db
+.DS_Store

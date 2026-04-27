@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KisanMausam — Edit Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#F5F7F1;min-height:100vh}
+nav{background:#1B5E2F;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.1rem;color:#fff}
+.logo em{color:#6EE79A;font-style:normal}
+.nav-links{display:flex;gap:16px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.8);font-size:.82rem;font-weight:600;text-decoration:none;padding:6px 12px;border-radius:8px;transition:.2s}
+.nav-links a:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-links a.active{background:rgba(255,255,255,.15);color:#fff}
+.wrap{max-width:680px;margin:36px auto;padding:0 20px 60px}
+.pg-title{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:800;color:#1C2B1E;margin-bottom:4px}
+.pg-sub{font-size:.86rem;color:#4A6550;margin-bottom:28px}
+.card{background:#fff;border-radius:18px;padding:28px;margin-bottom:20px;box-shadow:0 2px 12px rgba(27,94,47,.07)}
+.card-title{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;color:#1C2B1E;margin-bottom:18px;padding-bottom:12px;border-bottom:1.5px solid #E2EAE3}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:.73rem;font-weight:700;color:#4A6550;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.fg input,.fg select{width:100%;padding:11px 14px;border:1.5px solid #E2EAE3;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.9rem;color:#1C2B1E;outline:none;transition:.2s;background:#fff}
+.fg input:focus,.fg select:focus{border-color:#3D9B63;box-shadow:0 0 0 3px rgba(61,155,99,.1)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.crops-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.crop-chip{padding:7px 13px;border:2px solid #E2EAE3;border-radius:100px;font-size:.8rem;font-weight:600;color:#4A6550;cursor:pointer;transition:.2s;user-select:none}
+.crop-chip:hover{border-color:#81C784;color:#1B5E2F}
+.crop-chip.on{background:#E8F5E9;border-color:#3D9B63;color:#1B5E2F}
+.msg-ok{background:#E8F5E9;color:#1B5E2F;border-radius:10px;padding:11px 16px;font-size:.84rem;font-weight:600;margin-bottom:18px;border:1.5px solid #81C784}
+.msg-err{background:#FFEBEE;color:#C62828;border-radius:10px;padding:11px 16px;font-size:.84rem;font-weight:600;margin-bottom:18px}
+.actions{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+.btn-save{padding:11px 28px;background:#1B5E2F;color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:.2s}
+.btn-save:hover{background:#2E7D52}
+.btn-sec{padding:11px 20px;background:transparent;border:1.5px solid #E2EAE3;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;color:#4A6550;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;transition:.2s}
+.btn-sec:hover{border-color:#4A6550}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Kisan<em>Mausam</em></div>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/profile/edit/" class="active">Edit Profile</a>
+    <a href="/profile/password/">Change Password</a>
+    <a href="/logout/">Logout</a>
+  </div>
+</nav>
+<div class="wrap">
+  <div class="pg-title">Edit Your Farm Profile</div>
+  <div class="pg-sub">Update your farm details to get more accurate alerts and recommendations.</div>
+
+  {% if messages %}{% for m in messages %}<div class="msg-ok">✓ {{ m }}</div>{% endfor %}{% endif %}
+
+  <form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="crops" id="crops-hidden" value="{{ selected_crops|join:',' }}">
+
+    <div class="card">
+      <div class="card-title">📍 Location</div>
+      <div class="row2">
+        <div class="fg">
+          <label>State</label>
+          <select name="state">
+            {% for s in indian_states %}
+            <option value="{{ s }}" {% if s == profile.state %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fg">
+          <label>City / District</label>
+          <input type="text" name="city" value="{{ profile.city }}" placeholder="e.g. Mumbai">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌾 Crops</div>
+      <div class="fg">
+        <label>Select all crops you are growing</label>
+        <div class="crops-grid" id="crops-grid">
+          {% for crop in all_crops %}
+          <div class="crop-chip {% if crop in selected_crops %}on{% endif %}"
+               onclick="toggleCrop(this, '{{ crop }}')">{{ crop }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="fg" style="margin-top:14px">
+        <label>Crop Stage</label>
+        <select name="crop_stage">
+            <option value="Sowing"     {% if profile.crop_stage == 'Sowing'     %}selected{% endif %}>Sowing</option>
+            <option value="Vegetative" {% if profile.crop_stage == 'Vegetative' %}selected{% endif %}>Vegetative / Growing</option>
+            <option value="Flowering"  {% if profile.crop_stage == 'Flowering'  %}selected{% endif %}>Flowering</option>
+            <option value="Harvest"    {% if profile.crop_stage == 'Harvest'    %}selected{% endif %}>Near Harvest</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏡 Farm Details</div>
+      <div class="row2">
+        <div class="fg">
+          <label>Farm Size (Acres)</label>
+          <input type="number" name="farm_size" value="{{ profile.farm_size|default:'' }}" placeholder="e.g. 2.5" min="0.1" step="0.1">
+        </div>
+        <div class="fg">
+          <label>Irrigation Source</label>
+          <select name="irrigation">
+            <option value="rainfed"  {% if profile.irrigation == 'rainfed'  %}selected{% endif %}>Rain-fed</option>
+            <option value="borewell" {% if profile.irrigation == 'borewell' %}selected{% endif %}>Borewell</option>
+            <option value="canal"    {% if profile.irrigation == 'canal'    %}selected{% endif %}>Canal</option>
+            <option value="drip"     {% if profile.irrigation == 'drip'     %}selected{% endif %}>Drip / Sprinkler</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧪 Soil Data</div>
+      <div class="fg">
+        <label>Soil Type</label>
+        <select name="soil_type">
+          <option value="black"    {% if profile.soil_type == 'black'    %}selected{% endif %}>Black / Cotton soil</option>
+          <option value="red"      {% if profile.soil_type == 'red'      %}selected{% endif %}>Red / Laterite</option>
+          <option value="alluvial" {% if profile.soil_type == 'alluvial' %}selected{% endif %}>Alluvial / Sandy loam</option>
+          <option value="loamy"    {% if profile.soil_type == 'loamy'    %}selected{% endif %}>Loamy / Mixed</option>
+        </select>
+      </div>
+      <div class="row2">
+        <div class="fg">
+          <label>Soil pH (4–9)</label>
+          <input type="number" name="soil_ph" value="{{ profile.soil_ph|default:'' }}" placeholder="e.g. 6.5" min="4" max="9" step="0.1">
+        </div>
+        <div class="fg">
+          <label>Soil Moisture (%)</label>
+          <input type="number" name="soil_moisture" value="{{ profile.soil_moisture|default:'' }}" placeholder="e.g. 45" min="0" max="100">
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a href="/" class="btn-sec">← Back to Dashboard</a>
+      <button type="submit" class="btn-save">Save Changes</button>
+    </div>
+  </form>
+</div>
+
+<script>
+const selected = new Set({{ selected_crops|safe }});
+function toggleCrop(el, name) {
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) selected.add(name);
+  else selected.delete(name);
+  document.getElementById('crops-hidden').value = [...selected].join(',');
+}
+</script>
+</body>
+</html>

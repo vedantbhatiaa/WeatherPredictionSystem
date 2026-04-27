@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KisanMausam — {% if mode == 'register' %}Create Account{% else %}Sign In{% endif %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#F5F7F1;min-height:100vh;display:flex}
+.ll{width:42%;background:#1B5E2F;display:flex;flex-direction:column;justify-content:center;padding:60px 56px;position:relative;overflow:hidden}
+.ll::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(255,255,255,.04);top:-100px;right:-100px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:48px;position:relative;z-index:1}
+.bl{width:42px;height:42px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.bn{font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:800;color:#fff}
+.bn em{color:#6EE79A;font-style:normal}
+.hh{font-family:'Outfit',sans-serif;font-size:2.2rem;font-weight:800;line-height:1.15;color:#fff;margin-bottom:14px;position:relative;z-index:1}
+.hh span{color:#6EE79A}
+.hp{font-size:.95rem;line-height:1.65;color:rgba(255,255,255,.7);max-width:320px;margin-bottom:40px;position:relative;z-index:1}
+.feats{display:flex;flex-direction:column;gap:13px;position:relative;z-index:1}
+.feat{display:flex;align-items:center;gap:11px;color:rgba(255,255,255,.85);font-size:.88rem}
+.fi{width:30px;height:30px;border-radius:50%;background:rgba(110,231,154,.18);display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0}
+.lr{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 40px;overflow-y:auto}
+.lb{width:100%;max-width:420px}
+.lb h2{font-family:'Outfit',sans-serif;font-size:1.7rem;font-weight:800;color:#1C2B1E;margin-bottom:6px}
+.lb p{font-size:.88rem;color:#4A6550;margin-bottom:28px;line-height:1.6}
+.tabs{display:flex;background:#E2EAE3;border-radius:100px;padding:3px;margin-bottom:26px}
+.tab{flex:1;padding:9px;font-size:.85rem;font-weight:700;border:none;background:transparent;color:#4A6550;border-radius:100px;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;transition:.2s}
+.tab.on,.tab:hover{background:#fff;color:#1B5E2F;box-shadow:0 1px 4px rgba(27,94,47,.07)}
+.fg{margin-bottom:15px}
+.fg label{display:block;font-size:.75rem;font-weight:700;color:#4A6550;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.fg input{width:100%;padding:12px 15px;border:1.5px solid #E2EAE3;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.9rem;color:#1C2B1E;outline:none;transition:.2s}
+.fg input:focus{border-color:#3D9B63;box-shadow:0 0 0 3px rgba(61,155,99,.1)}
+.fg input.err-field{border-color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.1)}
+.pwd-hint{font-size:.68rem;color:#8FA690;margin-top:4px}
+.pwd-match{font-size:.7rem;margin-top:4px;font-weight:600;min-height:16px}
+.pwd-match.ok{color:#1B5E2F}
+.pwd-match.no{color:#dc2626}
+.btn-p{width:100%;padding:13px;background:#1B5E2F;color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:.2s;margin-top:4px}
+.btn-p:hover{background:#2E7D52}
+.dv{display:flex;align-items:center;gap:11px;margin:16px 0;color:#8FA690;font-size:.78rem}
+.dv::before,.dv::after{content:'';flex:1;height:1px;background:#E2EAE3}
+/* FIX 1 — Both secondary buttons stacked vertically */
+.secondary-actions{display:flex;flex-direction:column;gap:10px}
+.btn-s{width:100%;padding:13px;background:transparent;border:1.5px solid #3D9B63;color:#1B5E2F;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;text-decoration:none;display:block;text-align:center;transition:.2s}
+.btn-s:hover{background:#F1F8F2}
+.btn-admin{width:100%;padding:11px;background:transparent;border:1.5px solid #E2EAE3;color:#6B7280;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.86rem;font-weight:600;cursor:pointer;text-decoration:none;display:block;text-align:center;transition:.2s}
+.btn-admin:hover{border-color:#9CA3AF;color:#374151;background:#F9FAF9}
+/* FIX 3 — Error dialog modal */
+.err-overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .15s ease}
+.err-modal{background:#fff;border-radius:18px;padding:30px 28px 24px;max-width:340px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.22);animation:popIn .2s ease;text-align:center}
+.err-icon{font-size:2.4rem;margin-bottom:12px}
+.err-modal h3{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:800;color:#1C2B1E;margin-bottom:8px}
+.err-modal p{font-size:.86rem;color:#4A6550;line-height:1.6;margin-bottom:22px}
+.err-modal-btn{width:100%;padding:11px;background:#1B5E2F;color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:.2s}
+.err-modal-btn:hover{background:#2E7D52}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@media(max-width:768px){.ll{display:none}.lr{padding:28px 20px}}
+</style>
+</head>
+<body>
+
+{% if error %}
+<!-- FIX 3 — Server-side error modal dialog -->
+<div class="err-overlay" id="err-overlay">
+  <div class="err-modal">
+    <div class="err-icon">
+      {% if 'password' in error|lower or 'incorrect' in error|lower or 'invalid' in error|lower or 'credentials' in error|lower %}
+        🔒
+      {% elif 'taken' in error|lower or 'already' in error|lower %}
+        👤
+      {% elif 'match' in error|lower %}
+        🔑
+      {% elif 'characters' in error|lower or 'short' in error|lower %}
+        📏
+      {% else %}
+        ⚠️
+      {% endif %}
+    </div>
+    <h3>
+      {% if 'password' in error|lower and 'match' in error|lower %}
+        Passwords Don't Match
+      {% elif 'password' in error|lower or 'incorrect' in error|lower or 'invalid' in error|lower or 'credentials' in error|lower %}
+        Incorrect Password
+      {% elif 'taken' in error|lower or 'already' in error|lower %}
+        Username Already Taken
+      {% elif 'characters' in error|lower or 'short' in error|lower %}
+        Password Too Short
+      {% elif 'required' in error|lower %}
+        Missing Information
+      {% else %}
+        Something Went Wrong
+      {% endif %}
+    </h3>
+    <p>{{ error }}</p>
+    <button class="err-modal-btn" id="err-close-btn">OK, Try Again</button>
+  </div>
+</div>
+{% endif %}
+
+<div class="ll">
+  <div class="brand">
+    <div class="bl">🌾</div>
+    <div class="bn">Kisan<em>Mausam</em></div>
+  </div>
+  <div class="hh">Weather that speaks<br>your crop's <span>language.</span></div>
+  <p class="hp">Real-time alerts, disease risk warnings, and crop recommendations — personalised for your farm.</p>
+  <div class="feats">
+    <div class="feat"><div class="fi">🌧</div> 15-day forecast with farm action alerts</div>
+    <div class="feat"><div class="fi">🌾</div> Region-aware crop recommendations</div>
+    <div class="feat"><div class="fi">🦠</div> Disease &amp; pest early warning</div>
+    <div class="feat"><div class="fi">💬</div> Kisan Assistant 24/7</div>
+  </div>
+</div>
+
+<div class="lr">
+  <div class="lb">
+    <h2>{% if mode == 'register' %}Create your account 🌱{% else %}Welcome back 🙏{% endif %}</h2>
+    <p>{% if mode == 'register' %}Get personalised weather and crop advice for your farm.{% else %}Sign in to your farm dashboard.{% endif %}</p>
+
+    <div class="tabs">
+      <a href="/login/"    class="tab {% if mode != 'register' %}on{% endif %}">🌾 Farmer Sign In</a>
+      <a href="/register/" class="tab {% if mode == 'register' %}on{% endif %}">New Account</a>
+    </div>
+
+    <form method="POST" id="main-form" onsubmit="return validateForm()">
+      {% csrf_token %}
+
+      {% if mode == 'register' %}
+      <div class="fg">
+        <label>Your Name</label>
+        <input type="text" name="name" id="f-name"
+               placeholder="Full name" required autocomplete="name">
+      </div>
+      <div class="fg">
+        <label>Username</label>
+        <input type="text" name="username" id="f-username"
+               placeholder="Choose a username" required autocomplete="username">
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" name="password" id="f-password"
+               placeholder="Choose a password" required autocomplete="new-password"
+               oninput="checkMatch()">
+        <div class="pwd-hint">Minimum 8 characters</div>
+      </div>
+      <!-- FIX 2 — Confirm password field -->
+      <div class="fg">
+        <label>Confirm Password</label>
+        <input type="password" name="confirm_password" id="f-confirm"
+               placeholder="Type your password again" required autocomplete="new-password"
+               oninput="checkMatch()">
+        <div class="pwd-match" id="pwd-match-msg"></div>
+      </div>
+      <input type="hidden" name="role" value="farmer">
+      <button type="submit" class="btn-p">Create Account →</button>
+
+      {% else %}
+      <div class="fg">
+        <label>Username</label>
+        <input type="text" name="username"
+               placeholder="Your username" required autocomplete="username">
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" name="password"
+               placeholder="Your password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-p">Sign In →</button>
+      {% endif %}
+    </form>
+
+    <div class="dv">or</div>
+
+    <!-- FIX 1 — Stacked vertically, not side-by-side -->
+    <div class="secondary-actions">
+      {% if mode == 'register' %}
+      <a href="/login/"    class="btn-s">Sign In to Existing Account</a>
+      {% else %}
+      <a href="/register/" class="btn-s">Create New Farmer Account</a>
+      {% endif %}
+      <a href="/admin/" class="btn-admin">🔐 Admin Login</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// FIX 2 — Live password match indicator
+function checkMatch() {
+  const pw  = document.getElementById('f-password');
+  const cf  = document.getElementById('f-confirm');
+  const msg = document.getElementById('pwd-match-msg');
+  if (!cf || !pw || !msg) return;
+  if (!cf.value) {
+    msg.textContent = '';
+    cf.classList.remove('err-field');
+    return;
+  }
+  if (pw.value === cf.value) {
+    msg.textContent = '✓ Passwords match';
+    msg.className   = 'pwd-match ok';
+    cf.classList.remove('err-field');
+  } else {
+    msg.textContent = '✗ Passwords do not match';
+    msg.className   = 'pwd-match no';
+    cf.classList.add('err-field');
+  }
+}
+
+// FIX 2 — Client-side validation before submit
+function validateForm() {
+  const isRegister = document.getElementById('f-password') !== null;
+  if (!isRegister) return true;
+
+  const pw = document.getElementById('f-password');
+  const cf = document.getElementById('f-confirm');
+  if (!pw || !cf) return true;
+
+  if (pw.value.length < 8) {
+    showDialog('📏', 'Password Too Short',
+      'Your password must be at least 8 characters long. Please choose a stronger password.');
+    pw.focus();
+    return false;
+  }
+  if (pw.value !== cf.value) {
+    showDialog('🔑', "Passwords Don't Match",
+      'The passwords you entered do not match. Please re-enter them and make sure they are identical.');
+    cf.classList.add('err-field');
+    cf.focus();
+    return false;
+  }
+  return true;
+}
+
+// Generic dialog builder
+function showDialog(icon, title, message) {
+  const id = 'dynamic-err-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'err-overlay';
+  div.id = id;
+  div.innerHTML = `
+    <div class="err-modal">
+      <div class="err-icon">${icon}</div>
+      <h3>${title}</h3>
+      <p>${message}</p>
+      <button class="err-modal-btn" onclick="document.getElementById('${id}').remove()">OK</button>
+    </div>`;
+  document.body.appendChild(div);
+}
+
+// FIX 3 — Wire up close button on server-error modal
+const closeBtn = document.getElementById('err-close-btn');
+if (closeBtn) {
+  closeBtn.addEventListener('click', function() {
+    const overlay = document.getElementById('err-overlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity .15s';
+      setTimeout(() => overlay.remove(), 160);
+    }
+  });
+}
+
+// Close on backdrop click
+const overlay = document.getElementById('err-overlay');
+if (overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeBtn && closeBtn.click();
+  });
+}
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  const o = document.querySelector('.err-overlay');
+  if (o) { o.style.opacity='0'; setTimeout(()=>o.remove(),160); }
+});
+</script>
+</body>
+</html>

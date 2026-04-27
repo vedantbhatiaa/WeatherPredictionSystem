@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% load static %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KisanMausam — Farm Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="icon" href="{% static 'img/site-pic.ico' %}" type="image/icon type">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#F5F7F1;min-height:100vh;color:#1C2B1E}
+
+/* ── NAV ── */
+.main-nav{background:#1B5E2F;height:56px;display:flex;align-items:center;gap:14px;padding:0 20px;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.nav-logo{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:800;color:#fff;white-space:nowrap;flex-shrink:0}
+.nav-logo span{color:#6EE79A}
+.nav-search{display:flex;align-items:center;background:rgba(255,255,255,.12);border-radius:10px;padding:0 12px;gap:8px;flex:0 0 300px;position:relative}
+.nav-search i{color:rgba(255,255,255,.6);font-size:.9rem;flex-shrink:0}
+#city-input{background:transparent;border:none;outline:none;color:#fff;font-family:'Nunito',sans-serif;font-size:.88rem;width:100%;padding:9px 0}
+#city-input::placeholder{color:rgba(255,255,255,.5)}
+#city-input::-webkit-calendar-picker-indicator{display:none}
+.nav-forecast-btn{padding:7px 16px;background:#6EE79A;color:#1B5E2F;border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.2s}
+.nav-forecast-btn:hover{background:#4ade80}
+.nav-spacer{flex:1}
+.nav-chip{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:.75rem;font-weight:600;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+
+/* ── USER DROPDOWN (JS-toggled, not CSS hover) ── */
+.nav-user{position:relative;flex-shrink:0}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:#6EE79A;color:#1B5E2F;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;border:2px solid rgba(255,255,255,.3);user-select:none}
+.user-dropdown{
+  position:absolute;right:0;top:44px;
+  background:#fff;border-radius:12px;
+  box-shadow:0 8px 28px rgba(0,0,0,.18);
+  min-width:190px;padding:8px 0;
+  z-index:500;
+  display:none;
+  pointer-events:auto;
+}
+.user-dropdown.open{display:block}
+.user-dropdown a,.user-dropdown button{
+  display:flex;align-items:center;gap:9px;
+  width:100%;padding:10px 16px;
+  font-family:'Nunito',sans-serif;font-size:.83rem;font-weight:600;
+  color:#1C2B1E;text-decoration:none;
+  background:none;border:none;text-align:left;cursor:pointer;transition:.15s
+}
+.user-dropdown a:hover,.user-dropdown button:hover{background:#F5F7F1;color:#1B5E2F}
+.user-dropdown hr{border:none;border-top:1px solid #E2EAE3;margin:4px 0}
+.ud-logout{color:#dc2626!important}
+.ud-logout:hover{background:#FEF2F2!important;color:#dc2626!important}
+
+/* ── GREETING ── */
+.greeting-bar{background:#1B5E2F;padding:12px 20px 16px;display:flex;align-items:flex-start;gap:14px}
+.greeting-avatar{width:42px;height:42px;border-radius:50%;background:rgba(110,231,154,.25);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;margin-top:2px}
+.greeting-text{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:3px}
+.greeting-sub{font-size:.76rem;color:rgba(255,255,255,.65);margin-bottom:7px}
+.crop-tags{display:flex;flex-wrap:wrap;gap:6px}
+.crop-tag{background:rgba(110,231,154,.2);border:1px solid rgba(110,231,154,.35);color:#6EE79A;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:100px}
+
+/* ── MAIN LAYOUT ── */
+.page-body{max-width:1280px;margin:0 auto;padding:20px 20px 60px}
+.top-grid{display:grid;grid-template-columns:320px 1fr;gap:16px;margin-bottom:16px}
+
+/* ── WEATHER CARD ── */
+.weather-card{background:linear-gradient(145deg,#1B5E2F,#2E7D52);border-radius:20px;padding:20px;color:#fff;position:relative;overflow:hidden}
+.weather-card::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);top:-50px;right:-50px}
+.wc-loc{font-size:.78rem;font-weight:600;opacity:.8;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.wc-temp{font-family:'Outfit',sans-serif;font-size:3.6rem;font-weight:800;line-height:1;margin:6px 0}
+.wc-desc{font-size:.95rem;font-weight:600;margin-bottom:3px;opacity:.9}
+.wc-meta{font-size:.73rem;opacity:.65;margin-bottom:14px}
+.wc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wc-stat{background:rgba(255,255,255,.1);border-radius:10px;padding:9px;display:flex;align-items:center;gap:7px}
+.wc-stat i{font-size:.95rem;opacity:.7}
+.wc-stat .sv{font-size:.88rem;font-weight:700}
+.wc-stat .sl{font-size:.65rem;opacity:.6;margin-top:1px}
+
+/* ── RIGHT COL ── */
+.right-col{display:flex;flex-direction:column;gap:12px}
+.top-alerts-list{display:flex;flex-direction:column;gap:10px}
+.top-alert{background:#fff;border-radius:14px;padding:13px 15px;display:flex;align-items:flex-start;gap:11px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.top-alert.danger{border-left:4px solid #dc2626}
+.top-alert.warning{border-left:4px solid #d97706}
+.top-alert.info{border-left:4px solid #2563eb}
+.ta-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.ta-type{font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:800;color:#1C2B1E;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.ta-msg{font-size:.76rem;color:#374151;margin-bottom:4px}
+.ta-action{font-size:.71rem;font-weight:600;color:#1B5E2F;background:#E8F5E9;padding:2px 8px;border-radius:6px;display:inline-block}
+
+.quick-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qm-tile{background:#fff;border-radius:12px;padding:12px 14px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.qm-val{font-family:'Outfit',sans-serif;font-size:1.25rem;font-weight:800;color:#1C2B1E}
+.qm-val.green{color:#1B5E2F}.qm-val.orange{color:#b45309}
+.qm-lbl{font-size:.63rem;color:#6B7280;margin-top:3px;line-height:1.4}
+
+/* ── FORECAST STRIP ── */
+.forecast-section{background:#fff;border-radius:16px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:16px}
+.fs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fs-title{font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:800;color:#1B5E2F;text-transform:uppercase;letter-spacing:.5px}
+.fs-hint{font-size:.68rem;color:#9CA3AF}
+.forecast-strip{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.fc-day{flex:0 0 72px;border-radius:12px;padding:9px 5px;text-align:center;border:2px solid transparent;transition:.2s}
+.fc-day.today{background:#1B5E2F;color:#fff}
+.fc-day.today .fc-date,.fc-day.today .fc-hum{color:rgba(255,255,255,.7)}
+.fc-day.today .fc-temp{color:#fff}
+.fc-day:not(.today){background:#F5F7F1}
+.fc-day:not(.today):hover{border-color:#3D9B63;background:#E8F5E9}
+.fc-day.hot:not(.today){background:#FEF2F2}
+.fc-day.warm:not(.today){background:#FFFBEB}
+.fc-date{font-size:.64rem;font-weight:700;color:#6B7280;margin-bottom:3px}
+.fc-icon{font-size:1rem;margin-bottom:3px}
+.fc-temp{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;color:#1C2B1E;margin-bottom:2px}
+.fc-hum{font-size:.6rem;color:#9CA3AF}
+.conf-labels{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.conf-lbl{font-size:.66rem;color:#9CA3AF;padding:2px 8px;border-radius:6px}
+.conf-lbl.c1{background:#E8F5E9;color:#1B5E2F;font-weight:700}
+.conf-lbl.c2{background:#FEF9C3;color:#854D0E;font-weight:600}
+
+/* ── BOTTOM GRID ── */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+.panel{background:#fff;border-radius:16px;box-shadow:0 1px 6px rgba(0,0,0,.06);overflow:hidden}
+.panel-hdr{padding:13px 17px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ph-title{font-family:'Outfit',sans-serif;font-size:.92rem;font-weight:800;color:#1C2B1E;flex:1}
+.ph-sub{font-size:.68rem;color:#9CA3AF}
+.badge{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:100px}
+.badge.danger{background:#FEE2E2;color:#991B1B}
+.badge.warning{background:#FEF3C7;color:#92400E}
+
+/* ── ALERTS PANEL ── */
+.your-crops-row{padding:7px 17px;background:#F5F7F1;font-size:.73rem;color:#4A6550;font-weight:600;border-bottom:1px solid #F3F4F6}
+.alert-list-inner{max-height:360px;overflow-y:auto;padding:9px 13px}
+.al-group{margin-bottom:10px;border-radius:10px;overflow:hidden;border:1px solid transparent}
+.al-group.danger{border-color:#fecaca;background:#fff5f5}
+.al-group.warning{border-color:#fde68a;background:#fffbeb}
+.al-group.info{border-color:#bfdbfe;background:#eff6ff}
+.al-group-hdr{display:flex;align-items:center;gap:8px;padding:10px 13px;cursor:pointer}
+.al-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.al-dot.danger{background:#dc2626}.al-dot.warning{background:#d97706}.al-dot.info{background:#2563eb}
+.al-type{font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;flex:1}
+.al-group.danger .al-type{color:#991B1B}
+.al-group.warning .al-type{color:#92400E}
+.al-group.info .al-type{color:#1e40af}
+.al-count{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:100px;flex-shrink:0}
+.al-group.danger .al-count{background:#fecaca;color:#991B1B}
+.al-group.warning .al-count{background:#fde68a;color:#92400E}
+.al-group.info .al-count{background:#bfdbfe;color:#1e40af}
+.al-chevron{font-size:.7rem;color:#9CA3AF;transition:.2s}
+.al-group-body{padding:0 13px 10px;border-top:1px solid rgba(0,0,0,.05)}
+.al-msg{font-size:.74rem;color:#374151;margin:8px 0 6px;line-height:1.45}
+.al-days{font-size:.67rem;color:#9CA3AF;margin-bottom:6px}
+.al-action{font-size:.69rem;font-weight:600;color:#1B5E2F;background:#E8F5E9;padding:2px 7px;border-radius:5px;display:inline-block}
+.al-group.open .al-chevron{transform:rotate(180deg)}
+.no-alerts{text-align:center;padding:28px;color:#059669;font-size:.85rem}
+
+/* ── ADVISORY PANEL ── */
+.advisory-body{padding:13px}
+.adv-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.adv-tile{background:#F5F7F1;border-radius:12px;padding:13px;position:relative}
+.adv-badge{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:100px;display:inline-block;margin-bottom:7px}
+.adv-badge.green{background:#D1FAE5;color:#065F46}
+.adv-badge.amber{background:#FEF3C7;color:#92400E}
+.adv-badge.red{background:#FEE2E2;color:#991B1B;position:absolute;top:9px;right:9px}
+.adv-icon{font-size:1.2rem;display:block;margin-bottom:5px}
+.adv-num{font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:800;color:#1C2B1E;margin-bottom:4px}
+.adv-num.orange{color:#b45309}.adv-num.green{color:#1B5E2F}
+.adv-lbl{font-size:.65rem;color:#6B7280;line-height:1.45}
+
+/* ── CROP SECTION ── */
+.crop-section{margin-bottom:40px}
+.crop-section-hdr{margin-bottom:14px}
+.crop-section-hdr h3{font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:800;color:#1B5E2F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.crop-section-hdr p{font-size:.78rem;color:#6B7280;line-height:1.5}
+.crop-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.crop-card{background:#fff;border-radius:16px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.06);position:relative;border:2px solid transparent;transition:.2s}
+.crop-card:first-child{border-color:#1B5E2F}
+.crop-card:hover{border-color:#3D9B63;transform:translateY(-2px);box-shadow:0 4px 14px rgba(27,94,47,.1)}
+.cc-rank{position:absolute;top:10px;right:10px;width:21px;height:21px;border-radius:50%;background:#1B5E2F;color:#fff;font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif}
+.cc-emoji{font-size:1.7rem;margin-bottom:5px;display:block}
+.cc-name{font-family:'Outfit',sans-serif;font-size:.92rem;font-weight:800;color:#1C2B1E;margin-bottom:2px}
+.cc-season{font-size:.65rem;color:#6B7280;margin-bottom:9px}
+.cc-score-wrap{display:flex;align-items:center;gap:6px;margin-bottom:11px}
+.cc-bar{height:5px;flex:1;background:#E5E7EB;border-radius:3px;overflow:hidden}
+.cc-bar-fill{height:100%;background:#1B5E2F;border-radius:3px}
+.cc-score-num{font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:800;color:#1B5E2F;flex-shrink:0;width:24px}
+.cc-details{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.cc-det-row{display:flex;justify-content:space-between;font-size:.67rem}
+.cc-det-row span:first-child{color:#9CA3AF}
+.cc-det-row span:last-child{font-weight:700;color:#1C2B1E}
+.cc-badge{font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:5px;display:inline-block;margin-right:3px;margin-top:3px}
+.cc-badge.off{background:#FEF3C7;color:#92400E}
+.cc-badge.pinned{background:#E8F5E9;color:#1B5E2F}
+.cc-warns{margin-top:7px;border-top:1px solid #F3F4F6;padding-top:6px}
+.cc-warn{font-size:.61rem;color:#b45309;margin-bottom:2px;line-height:1.35}
+
+/* ── LOADING BAR ── */
+.loading-bar{position:fixed;top:56px;left:0;width:0;height:3px;background:#6EE79A;transition:width .3s;z-index:300}
+
+/* ── CHATBOT ── */
+.chat-widget{position:fixed;bottom:20px;right:20px;z-index:1000}
+.chat-btn{width:52px;height:52px;border-radius:50%;background:#1B5E2F;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);border:none;transition:.2s}
+.chat-btn:hover{background:#2E7D52;transform:scale(1.05)}
+.chat-window{position:absolute;bottom:66px;right:0;width:360px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.15);display:none;flex-direction:column;overflow:hidden}
+.chat-window.open{display:flex;animation:chatIn .22s ease}
+@keyframes chatIn{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.chat-hdr{background:#1B5E2F;color:#fff;padding:13px 15px;display:flex;align-items:center;justify-content:space-between}
+.chat-hdr-info{display:flex;flex-direction:column}
+.chat-hdr h3{font-family:'Outfit',sans-serif;font-size:.92rem;font-weight:700;margin:0}
+.chat-hdr-sub{font-size:.68rem;color:rgba(255,255,255,.65);margin-top:2px}
+.chat-close{background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;opacity:.7;line-height:1}
+.chat-close:hover{opacity:1}
+#chat-msgs{flex:1;overflow-y:auto;padding:11px;background:#F9FBF9;display:flex;flex-direction:column;gap:7px}
+.msg-user{background:#1B5E2F;color:#fff;padding:8px 12px;border-radius:13px 13px 4px 13px;max-width:76%;align-self:flex-end;font-size:.8rem;line-height:1.4;word-wrap:break-word}
+.msg-bot{background:#E8F5E9;color:#1C2B1E;padding:8px 12px;border-radius:13px 13px 13px 4px;max-width:84%;align-self:flex-start;font-size:.8rem;line-height:1.5;white-space:pre-line;word-wrap:break-word}
+.typing{font-size:.73rem;color:#9CA3AF;font-style:italic;display:none;align-self:flex-start;padding:3px 8px}
+.chat-chips{display:flex;flex-wrap:wrap;gap:5px;padding:7px 10px;background:#F3F4F6;border-top:1px solid #E5E7EB}
+.chat-chip{font-size:.68rem;padding:4px 9px;border-radius:100px;background:#fff;border:1px solid #E5E7EB;cursor:pointer;color:#374151;transition:.15s;white-space:nowrap}
+.chat-chip:hover{border-color:#1B5E2F;color:#1B5E2F;background:#E8F5E9}
+.chat-input-row{display:flex;padding:9px;border-top:1px solid #E5E7EB;background:#fff;gap:7px}
+#cinp{flex:1;padding:8px 12px;border:1.5px solid #E5E7EB;border-radius:20px;font-family:'Nunito',sans-serif;font-size:.82rem;outline:none;transition:.2s}
+#cinp:focus{border-color:#3D9B63}
+.chat-send{width:34px;height:34px;border-radius:50%;background:#1B5E2F;border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
+.chat-send:hover{background:#2E7D52}
+
+@media(max-width:1024px){.top-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}.crop-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.crop-grid{grid-template-columns:repeat(2,1fr)}.quick-metrics{grid-template-columns:1fr}.adv-row{grid-template-columns:1fr}.nav-chip{display:none}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="main-nav">
+  <div class="nav-logo">Kisan <span>Mausam</span></div>
+  <div class="nav-search">
+    <i class="bi bi-geo-alt-fill"></i>
+    <input type="text" id="city-input" list="city-list" value="{{ city }}" placeholder="Enter city...">
+    <datalist id="city-list">
+      <option value="Mumbai"><option value="Delhi"><option value="Bengaluru"><option value="Chennai">
+      <option value="Kolkata"><option value="Hyderabad"><option value="Ahmedabad"><option value="Pune">
+      <option value="Jaipur"><option value="Lucknow"><option value="Ludhiana"><option value="Patna">
+      <option value="Bhopal"><option value="Indore"><option value="Nagpur"><option value="Surat">
+      <option value="Vadodara"><option value="Rajkot"><option value="Amritsar"><option value="Chandigarh">
+      <option value="Dehradun"><option value="Shimla"><option value="Jammu"><option value="Srinagar">
+      <option value="Raipur"><option value="Bhubaneswar"><option value="Guwahati"><option value="Kochi">
+      <option value="Visakhapatnam"><option value="Vijayawada"><option value="Coimbatore"><option value="Madurai">
+      <option value="Hisar"><option value="Rohtak"><option value="Agra"><option value="Varanasi">
+      <option value="Kanpur"><option value="Meerut"><option value="Jodhpur"><option value="Udaipur">
+      <option value="Nashik"><option value="Aurangabad"><option value="Kolhapur"><option value="Solapur">
+      <option value="Mysuru"><option value="Hubli"><option value="Mangaluru"><option value="Ranchi">
+    </datalist>
+  </div>
+  <button class="nav-forecast-btn" onclick="fetchWeather()">Get Forecast</button>
+  <div class="nav-spacer"></div>
+  <div class="nav-chip">📅 {{ today }} · {{ season }} Season</div>
+
+  <div class="nav-user" id="nav-user">
+    <div class="user-avatar" id="user-avatar-btn">{{ farmer_name|first|upper }}</div>
+    <div class="user-dropdown" id="user-dropdown">
+      <a href="/profile/edit/"><i class="bi bi-person-gear"></i>Edit Profile</a>
+      <a href="/profile/password/"><i class="bi bi-lock"></i>Change Password</a>
+      <hr>
+      <form method="post" action="/logout/" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="ud-logout"><i class="bi bi-box-arrow-right"></i>Logout</button>
+      </form>
+    </div>
+  </div>
+</nav>
+<div class="loading-bar" id="loading-bar"></div>
+
+<!-- GREETING -->
+<div class="greeting-bar">
+  <div class="greeting-avatar">👨‍🌾</div>
+  <div>
+    <div class="greeting-text">{{ greeting }}, {{ farmer_name }}! ⚡ Here's today's advisory for your farm.</div>
+    <div class="greeting-sub">{{ profile.state }}{% if profile.farm_size %} · {{ profile.farm_size }} acres{% endif %}{% if profile.crop_stage %} · {{ profile.crop_stage }} stage{% endif %}</div>
+    {% if farmer_crops %}
+    <div class="crop-tags">{% for c in farmer_crops %}<span class="crop-tag">{{ c }}</span>{% endfor %}</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- TOP GRID -->
+  <div class="top-grid">
+
+    <!-- WEATHER CARD -->
+    <div class="weather-card">
+      <div class="wc-loc"><i class="bi bi-geo-fill"></i> <span id="wc-city">{{ current.city }}</span>, <span id="wc-country">{{ current.country }}</span></div>
+      <div class="wc-temp"><span id="wc-temp">{{ current.current_temp }}</span>°C</div>
+      <div class="wc-desc" id="wc-desc">{{ current.description|capfirst }}</div>
+      <div class="wc-meta">Feels like <span id="wc-feels">{{ current.feels_like }}</span>° &nbsp;|&nbsp; <span id="wc-rain-meta">{% if rain_pred %}Rain expected{% else %}No rain expected{% endif %}</span></div>
+      <div class="wc-stats">
+        <div class="wc-stat"><i class="bi bi-droplet-fill"></i><div><div class="sv" id="wc-hum">{{ current.humidity }}%</div><div class="sl">Humidity</div></div></div>
+        <div class="wc-stat"><i class="bi bi-wind"></i><div><div class="sv" id="wc-wind">{{ current.wind_speed }} m/s</div><div class="sl">Wind</div></div></div>
+        <div class="wc-stat"><i class="bi bi-clouds-fill"></i><div><div class="sv" id="wc-clouds">{{ current.clouds }}%</div><div class="sl">Clouds</div></div></div>
+        <div class="wc-stat"><i class="bi bi-thermometer-half"></i><div><div class="sv"><span id="wc-min">{{ day_min_temp }}</span>°/<span id="wc-max">{{ day_max_temp }}</span>°</div><div class="sl">Min / Max</div></div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT COL -->
+    <div class="right-col">
+      <div class="top-alerts-list" id="top-alerts">
+        {% for a in alert_report.all_alerts_sorted|slice:":2" %}
+        <div class="top-alert {{ a.severity }}">
+          <div class="ta-icon">{% if a.severity == 'danger' %}🔴{% elif a.severity == 'warning' %}⚠️{% else %}ℹ️{% endif %}</div>
+          <div>
+            <div class="ta-type">{{ a.alert_type }}</div>
+            <div class="ta-msg">{{ a.message }}</div>
+            <div class="ta-action">{{ a.crop_action }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="top-alert info"><div class="ta-icon">✅</div><div><div class="ta-type">All Clear</div><div class="ta-msg">No hazard alerts for this region in the next 15 days.</div></div></div>
+        {% endfor %}
+      </div>
+      <div class="quick-metrics">
+        <div class="qm-tile">
+          <div class="qm-val {% if ag.heat_stress_days > 0 %}orange{% endif %}" id="qm-heat">{{ ag.heat_stress_days }}</div>
+          <div class="qm-lbl">Heat stress days this fortnight</div>
+        </div>
+        <div class="qm-tile">
+          <div class="qm-val green" id="qm-rain">{% if rain_pred %}Tomorrow{% else %}None yet{% endif %}</div>
+          <div class="qm-lbl">Next rain (RF model prediction)</div>
+        </div>
+        <div class="qm-tile">
+          <div class="qm-val" id="qm-saving">{{ ag.savings_pct }}%</div>
+          <div class="qm-lbl">Estimated yield loss prevented</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 15-DAY FORECAST STRIP -->
+  <div class="forecast-section">
+    <div class="fs-header">
+      <div class="fs-title">15-Day Forecast</div>
+      <div class="fs-hint" id="fs-hint">Daily HIGH temperatures · Weatherbit · {{ city }} region</div>
+    </div>
+    <div class="forecast-strip" id="forecast-strip">
+      {% for day in forecast_days %}
+      <div class="fc-day {% if forloop.first %}today{% endif %} {% if day.temp > 38 %}hot{% elif day.temp > 34 %}warm{% endif %}">
+        <div class="fc-date">{{ day.date }}</div>
+        <div class="fc-icon">{% if day.temp > 38 %}🌡️{% elif day.temp > 34 %}☀️{% elif day.hum > 80 %}🌧️{% else %}⛅{% endif %}</div>
+        <div class="fc-temp">{{ day.temp }}°</div>
+        <div class="fc-hum">{{ day.hum }}% RH</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="conf-labels">
+      <span class="conf-lbl c1">Days 1–3 · Short-range · high confidence ·</span>
+      <span class="conf-lbl c2">Days 4–7 · Medium-range · good confidence ·</span>
+      <span class="conf-lbl">Days 8–15 · Extended outlook · directional only</span>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+
+    <!-- FARM ALERTS (deduplicated by type) -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="ph-title">Farm Alerts</span>
+        <span class="badge danger" id="danger-count">{{ alert_report.risk_summary.danger_alerts|default:"0" }} Danger</span>
+        <span class="badge warning" id="warn-count">{{ alert_report.risk_summary.warning_alerts|default:"0" }} Warnings</span>
+      </div>
+      {% if farmer_crops %}
+      <div class="your-crops-row">
+        Your crops: {% for c in farmer_crops %}{{ c }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if profile.crop_stage %} ({{ profile.crop_stage }}){% endif %}
+      </div>
+      {% endif %}
+      <div class="alert-list-inner" id="alert-list">
+        {% if alert_report.risk_summary.total_alerts == 0 %}
+        <div class="no-alerts">✅ No hazard alerts — conditions look stable for the next 15 days.</div>
+        {% else %}
+        {% for a in alert_report.all_alerts_sorted %}
+        <div class="al-raw" data-type="{{ a.alert_type }}" data-sev="{{ a.severity }}" data-day="{{ a.day_label }}" data-msg="{{ a.message }}" data-action="{{ a.crop_action }}" style="display:none"></div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- FORECAST-BASED ADVISORY -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="ph-title">Forecast-Based Advisory</span>
+        <span class="ph-sub" id="adv-region">15-day · {{ city }} region</span>
+      </div>
+      <div class="advisory-body">
+        <div class="adv-row">
+
+          <!-- TILE 1: Peak Forecast Temperature — always Day 1 or whenever max occurs -->
+          <div class="adv-tile">
+            <span class="adv-badge {% if ag.peak_temp > 38 %}red{% elif ag.peak_temp > 34 %}amber{% else %}green{% endif %}" id="adv-peak-badge">
+              {% if ag.peak_temp > 38 %}Extreme heat{% elif ag.peak_temp > 34 %}Heat stress{% else %}Comfortable{% endif %}
+            </span>
+            <span class="adv-icon">🌡️</span>
+            <div class="adv-num {% if ag.peak_temp > 38 %}orange{% elif ag.peak_temp > 34 %}orange{% endif %}" id="adv-peak-temp">{{ ag.peak_temp }}°C</div>
+            <div class="adv-lbl">Peak forecast temperature · <strong id="adv-peak-temp-date">{{ ag.peak_temp_date }}</strong></div>
+          </div>
+
+          <!-- TILE 2: Heat Stress Days — days with daily HIGH > 34°C -->
+          <div class="adv-tile">
+            <span class="adv-icon">{% if ag.heat_stress_days > 0 %}⚠️{% else %}✅{% endif %}</span>
+            <div class="adv-num {% if ag.heat_stress_days > 0 %}orange{% endif %}" id="adv-heat">{{ ag.heat_stress_days }} days</div>
+            <div class="adv-lbl">Heat stress days above 34°C in the 15-day window</div>
+          </div>
+
+          <!-- TILE 3: Disease Risk Days — days with humidity > 82% -->
+          <div class="adv-tile">
+            <span class="adv-badge {% if ag.disease_risk_days > 7 %}red{% elif ag.disease_risk_days > 3 %}amber{% else %}green{% endif %}" id="adv-disease-badge">
+              {{ ag.disease_risk_label }}
+            </span>
+            <span class="adv-icon">🦠</span>
+            <div class="adv-num {% if ag.disease_risk_days > 3 %}orange{% endif %}" id="adv-disease">{{ ag.disease_risk_days }} days</div>
+            <div class="adv-lbl">High-humidity days (>82% RH) — fungal &amp; bacterial disease window</div>
+          </div>
+
+          <!-- TILE 4: Avg 15-Day Temperature — city-specific seasonal mean -->
+          <div class="adv-tile">
+            <span class="adv-badge {% if ag.avg_forecast_temp > 38 %}red{% elif ag.avg_forecast_temp > 34 %}amber{% else %}green{% endif %}">
+              {% if ag.avg_forecast_temp > 38 %}Severe heat season{% elif ag.avg_forecast_temp > 34 %}Hot season{% elif ag.avg_forecast_temp > 28 %}Warm season{% else %}Comfortable{% endif %}
+            </span>
+            <span class="adv-icon">📊</span>
+            <div class="adv-num {% if ag.avg_forecast_temp > 34 %}orange{% endif %}" id="adv-avg-temp">{{ ag.avg_forecast_temp }}°C</div>
+            <div class="adv-lbl">Avg forecast temperature across 15-day window — seasonal thermal load</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CROP RECOMMENDATIONS -->
+  <div class="crop-section">
+    <div class="crop-section-hdr">
+      <h3>Crop Recommendations</h3>
+      <p>Based on your region, soil type ({{ profile.soil_type|default:"alluvial" }}), and 15-day forecast.
+         Tell the <strong>Kisan Assistant</strong> your soil pH or moisture to update recommendations instantly.
+         Or ask it "top crops in [any city]" for location-specific suggestions.</p>
+    </div>
+    <div class="crop-grid" id="crop-grid">
+      {% for r in crop_recs %}{% with counter=forloop.counter %}
+      <div class="crop-card">
+        <div class="cc-rank">{{ counter }}</div>
+        <span class="cc-emoji">
+          {% if r.crop == 'Wheat' %}🌾{% elif r.crop == 'Rice' %}🍚{% elif r.crop == 'Cotton' %}🌿
+          {% elif r.crop == 'Sugarcane' %}🎋{% elif r.crop == 'Tomato' %}🍅{% elif r.crop == 'Onion' %}🧅
+          {% elif r.crop == 'Maize' %}🌽{% elif r.crop == 'Soybean' %}🫘{% elif r.crop == 'Chickpea' %}🌱
+          {% elif r.crop == 'Groundnut' %}🥜{% elif r.crop == 'Bajra' %}🌾{% else %}🌱{% endif %}
+        </span>
+        <div class="cc-name">{{ r.crop }}</div>
+        <div class="cc-season">{{ r.sow_window }}</div>
+        <div class="cc-score-wrap">
+          <div class="cc-bar"><div class="cc-bar-fill" style="width:{{ r.score }}%"></div></div>
+          <div class="cc-score-num">{{ r.score }}</div>
+        </div>
+        <div class="cc-details">
+          <div class="cc-det-row"><span>Water</span><span>{{ r.water_need }}</span></div>
+          <div class="cc-det-row"><span>Yield</span><span>{{ r.avg_yield_t_ha }} t/ha</span></div>
+          <div class="cc-det-row"><span>MSP</span><span>₹{{ r.msp_inr }}/qtl</span></div>
+          <div class="cc-det-row"><span>Revenue/ha</span><span>₹{{ r.projected_revenue_inr }}</span></div>
+        </div>
+        {% if not r.season_match %}<span class="cc-badge off">off-season now</span>{% endif %}
+        {% if r.warnings %}
+        <div class="cc-warns">{% for w in r.warnings %}<div class="cc-warn">⚠ {{ w }}</div>{% endfor %}</div>
+        {% endif %}
+      </div>
+      {% endwith %}{% endfor %}
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+
+<!-- CHATBOT -->
+<div class="chat-widget">
+  <button class="chat-btn" id="chat-toggle"><i class="bi bi-chat-dots-fill" style="font-size:1.25rem;color:#fff"></i></button>
+  <div class="chat-window" id="chat-window">
+    <div class="chat-hdr">
+      <div class="chat-hdr-info">
+        <h3>🌾 Kisan Assistant</h3>
+        <div class="chat-hdr-sub" id="chat-city-label">{{ city }} · Live data enabled</div>
+      </div>
+      <button class="chat-close" id="chat-close">✕</button>
+    </div>
+    <div id="chat-msgs"><div class="typing" id="typing">Thinking...</div></div>
+    <!-- Updated chips: now include live weather + location queries -->
+    <div class="chat-chips">
+      <div class="chat-chip" onclick="ask('What is the weather today?')">Today's weather</div>
+      <div class="chat-chip" onclick="ask('Show me the 7-day forecast')">7-day forecast</div>
+      <div class="chat-chip" onclick="ask('Top crops in Gujarat')">Crops in Gujarat</div>
+      <div class="chat-chip" onclick="ask('Weather in Delhi')">Delhi weather</div>
+      <div class="chat-chip" onclick="ask('How to prevent Bacterial Blight')">Blight control</div>
+      <div class="chat-chip" onclick="ask('Which crop for black soil')">Black soil crops</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="cinp" placeholder="Ask about weather, crops, any city…">
+      <button class="chat-send" onclick="sendMsg()"><i class="bi bi-send-fill"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CSRF     = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '{{ csrf_token }}';
+// City is rendered server-side; JS reads it for chatbot context
+const CURRENT_CITY = '{{ city }}';
+
+// ── USER DROPDOWN ─────────────────────────────────────────────────────────────
+const avatarBtn = document.getElementById('user-avatar-btn');
+const dropdown  = document.getElementById('user-dropdown');
+
+avatarBtn.addEventListener('click', function(e){
+  e.stopPropagation();
+  dropdown.classList.toggle('open');
+});
+document.addEventListener('click', function(e){
+  if(!document.getElementById('nav-user').contains(e.target)){
+    dropdown.classList.remove('open');
+  }
+});
+dropdown.addEventListener('click', function(e){ e.stopPropagation(); });
+
+// ── LOADING BAR ───────────────────────────────────────────────────────────────
+function showLoading(){ document.getElementById('loading-bar').style.width='70%'; }
+function hideLoading(){
+  const b = document.getElementById('loading-bar');
+  b.style.width = '100%';
+  setTimeout(()=>{ b.style.width='0'; }, 300);
+}
+
+// ── ALERT DEDUPLICATION ───────────────────────────────────────────────────────
+function buildAlertList(){
+  const raws = document.querySelectorAll('.al-raw');
+  if(!raws.length) return;
+
+  const groups = {};
+  raws.forEach(el => {
+    const type = el.dataset.type;
+    if(!groups[type]){
+      groups[type] = {
+        sev: el.dataset.sev, type, days: [],
+        msg: el.dataset.msg, action: el.dataset.action
+      };
+    }
+    groups[type].days.push(el.dataset.day);
+  });
+
+  const list = document.getElementById('alert-list');
+  list.innerHTML = '';
+
+  Object.values(groups).forEach((g, idx) => {
+    const count    = g.days.length;
+    const dayRange = count === 1 ? g.days[0]
+      : `${g.days[0]} – ${g.days[count-1]} (${count} days)`;
+    const icon = g.sev==='danger'?'🔴':g.sev==='warning'?'⚠️':'ℹ️';
+
+    const div = document.createElement('div');
+    div.className = `al-group ${g.sev}`;
+    div.innerHTML = `
+      <div class="al-group-hdr" onclick="toggleGroup(this)">
+        <div class="al-dot ${g.sev}"></div>
+        <div class="al-type">${icon} ${g.type}</div>
+        ${count > 1 ? `<span class="al-count">×${count} days</span>` : ''}
+        <span class="al-chevron bi bi-chevron-down"></span>
+      </div>
+      <div class="al-group-body" style="display:${idx===0?'block':'none'}">
+        <div class="al-days">${dayRange}</div>
+        <div class="al-msg">${g.msg}</div>
+        <span class="al-action">💡 ${g.action}</span>
+      </div>`;
+    list.appendChild(div);
+    if(idx===0) div.classList.add('open');
+  });
+}
+
+function toggleGroup(hdr){
+  const group = hdr.parentElement;
+  const body  = group.querySelector('.al-group-body');
+  const open  = group.classList.contains('open');
+  group.classList.toggle('open', !open);
+  body.style.display = open ? 'none' : 'block';
+}
+
+// ── CITY SEARCH AJAX ──────────────────────────────────────────────────────────
+async function fetchWeather(){
+  const city = document.getElementById('city-input').value.trim();
+  if(!city) return;
+  showLoading();
+  try{
+    const r = await fetch(`/get-weather/?city=${encodeURIComponent(city)}`);
+    if(!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    updateDashboard(data, city);
+    window.history.replaceState({}, '', `/?city=${encodeURIComponent(city)}`);
+  } catch(e){
+    alert('Could not fetch weather for "'+city+'". Please check the city name and try again.');
+  } finally { hideLoading(); }
+}
+
+document.getElementById('city-input').addEventListener('keypress', e=>{
+  if(e.key==='Enter') fetchWeather();
+});
+
+// ── DASHBOARD UPDATE FROM AJAX ────────────────────────────────────────────────
+const EMOJI = {wheat:'🌾',rice:'🍚',cotton:'🌿',sugarcane:'🎋',tomato:'🍅',onion:'🧅',
+               maize:'🌽',soybean:'🫘',chickpea:'🌱',groundnut:'🥜',bajra:'🌾'};
+
+function updateDashboard(d, searchedCity){
+  const c  = d.current || {};
+  const ag = d.ag      || {};
+
+  // Weather card
+  if(c.city)              document.getElementById('wc-city').textContent    = c.city;
+  if(c.country)           document.getElementById('wc-country').textContent = c.country;
+  if(c.current_temp!=null) document.getElementById('wc-temp').textContent  = c.current_temp;
+  if(c.description)       document.getElementById('wc-desc').textContent =
+      c.description.charAt(0).toUpperCase()+c.description.slice(1);
+  if(c.feels_like!=null)  document.getElementById('wc-feels').textContent  = c.feels_like;
+  if(c.humidity!=null)    document.getElementById('wc-hum').textContent    = c.humidity+'%';
+  if(c.wind_speed!=null)  document.getElementById('wc-wind').textContent   = c.wind_speed+' m/s';
+  if(c.clouds!=null)      document.getElementById('wc-clouds').textContent = c.clouds+'%';
+  // ── FIX: use Weatherbit day-0 min/max (accurate daily range) not OWM's ──────
+  if(d.day_min_temp!=null) document.getElementById('wc-min').textContent = d.day_min_temp;
+  if(d.day_max_temp!=null) document.getElementById('wc-max').textContent = d.day_max_temp;
+  if(d.rain_pred!=null){
+    document.getElementById('wc-rain-meta').textContent =
+        d.rain_pred ? 'Rain expected' : 'No rain expected';
+    document.getElementById('qm-rain').textContent = d.rain_pred ? 'Tomorrow' : 'None yet';
+  }
+
+  // Update forecast strip region label
+  if(searchedCity){
+    const hint = document.getElementById('fs-hint');
+    if(hint) hint.textContent = `Daily HIGH temperatures · Weatherbit · ${searchedCity} region`;
+    const reg = document.getElementById('adv-region');
+    if(reg) reg.textContent = `15-day · ${searchedCity} region`;
+    // Update chatbot city label
+    const chatCityLbl = document.getElementById('chat-city-label');
+    if(chatCityLbl) chatCityLbl.textContent = `${searchedCity} · Live data enabled`;
+  }
+
+  // Quick metrics
+  if(ag.heat_stress_days!=null){
+    const el = document.getElementById('qm-heat');
+    el.textContent = ag.heat_stress_days;
+    el.className   = 'qm-val'+(ag.heat_stress_days>0?' orange':'');
+  }
+  if(ag.savings_pct!=null) document.getElementById('qm-saving').textContent = ag.savings_pct+'%';
+
+  // Advisory tiles — ALL FOUR now genuinely city-specific
+  if(ag.peak_temp!=null){
+    document.getElementById('adv-peak-temp').textContent = ag.peak_temp+'°C';
+    const badge = document.getElementById('adv-peak-badge');
+    if(badge){
+      badge.textContent = ag.peak_temp > 38 ? 'Extreme heat'
+                        : ag.peak_temp > 34 ? 'Heat stress' : 'Comfortable';
+      badge.className = 'adv-badge '+(ag.peak_temp > 38 ? 'red' : ag.peak_temp > 34 ? 'amber' : 'green');
+    }
+    const el = document.getElementById('adv-peak-temp');
+    el.className = 'adv-num'+(ag.peak_temp > 34 ? ' orange' : '');
+  }
+  if(ag.peak_temp_date){
+    const el = document.getElementById('adv-peak-temp-date');
+    if(el) el.textContent = ag.peak_temp_date;
+  }
+  if(ag.heat_stress_days!=null){
+    const el = document.getElementById('adv-heat');
+    el.textContent = ag.heat_stress_days+' days';
+    el.className   = 'adv-num'+(ag.heat_stress_days>0?' orange':'');
+  }
+  if(ag.disease_risk_days!=null){
+    document.getElementById('adv-disease').textContent = ag.disease_risk_days+' days';
+    const el = document.getElementById('adv-disease');
+    el.className = 'adv-num'+(ag.disease_risk_days>3?' orange':'');
+    const badge = document.getElementById('adv-disease-badge');
+    if(badge){
+      badge.textContent = ag.disease_risk_label || (
+        ag.disease_risk_days === 0 ? 'Low risk'
+        : ag.disease_risk_days <= 3 ? 'Moderate risk'
+        : ag.disease_risk_days <= 7 ? 'High risk' : 'Very high risk'
+      );
+      badge.className = 'adv-badge '+(
+        ag.disease_risk_days > 7 ? 'red'
+        : ag.disease_risk_days > 3 ? 'amber' : 'green'
+      );
+    }
+  }
+  // ── Tile 4: Avg 15-day forecast temp ─────────────────────────────────────────
+  if(ag.avg_forecast_temp!=null){
+    const el = document.getElementById('adv-avg-temp');
+    if(el){
+      el.textContent = ag.avg_forecast_temp+'°C';
+      el.className   = 'adv-num'+(ag.avg_forecast_temp>34?' orange':'');
+    }
+  }
+
+  // Forecast strip
+  if(d.dates && d.temps){
+    const strip = document.getElementById('forecast-strip');
+    strip.innerHTML = d.dates.map((date,i)=>{
+      const temp=d.temps[i]||'--', hum=d.humidities[i]||'--';
+      const cls  = temp>38?'hot':temp>34?'warm':'';
+      const icon = temp>38?'🌡️':temp>34?'☀️':hum>80?'🌧️':'⛅';
+      return `<div class="fc-day ${i===0?'today':''} ${cls}">
+        <div class="fc-date">${date}</div><div class="fc-icon">${icon}</div>
+        <div class="fc-temp">${temp}°</div><div class="fc-hum">${hum}% RH</div></div>`;
+    }).join('');
+  }
+
+  // Top alerts (first 2 unique types)
+  if(d.alerts){
+    const topEl  = document.getElementById('top-alerts');
+    const danger = d.alerts.filter(a=>a.sev==='danger').length;
+    const warn   = d.alerts.filter(a=>a.sev==='warning').length;
+    document.getElementById('danger-count').textContent = danger+' Danger';
+    document.getElementById('warn-count').textContent   = warn+' Warnings';
+
+    const seen=new Set(), top=[];
+    d.alerts.forEach(a=>{ if(!seen.has(a.type)&&top.length<2){seen.add(a.type);top.push(a);} });
+
+    if(top.length===0){
+      topEl.innerHTML=`<div class="top-alert info"><div class="ta-icon">✅</div><div><div class="ta-type">All Clear</div><div class="ta-msg">No hazard alerts for this region.</div></div></div>`;
+    } else {
+      topEl.innerHTML=top.map(a=>`
+        <div class="top-alert ${a.sev}">
+          <div class="ta-icon">${a.sev==='danger'?'🔴':a.sev==='warning'?'⚠️':'ℹ️'}</div>
+          <div><div class="ta-type">${a.type}</div><div class="ta-msg">${a.msg}</div>
+          <div class="ta-action">${a.action}</div></div></div>`).join('');
+    }
+
+    // Alert list — deduplicate
+    const groups={};
+    d.alerts.forEach(a=>{
+      if(!groups[a.type]) groups[a.type]={sev:a.sev,type:a.type,days:[],msg:a.msg,action:a.action};
+      groups[a.type].days.push(a.day);
+    });
+    const list=document.getElementById('alert-list');
+    if(Object.keys(groups).length===0){
+      list.innerHTML=`<div class="no-alerts">✅ No hazard alerts — conditions look stable for the next 15 days.</div>`;
+    } else {
+      list.innerHTML='';
+      Object.values(groups).forEach((g,idx)=>{
+        const count=g.days.length;
+        const icon=g.sev==='danger'?'🔴':g.sev==='warning'?'⚠️':'ℹ️';
+        const dayRange=count===1?g.days[0]:`${g.days[0]} – ${g.days[count-1]} (${count} days)`;
+        const div=document.createElement('div');
+        div.className=`al-group ${g.sev}`;
+        div.innerHTML=`
+          <div class="al-group-hdr" onclick="toggleGroup(this)">
+            <div class="al-dot ${g.sev}"></div>
+            <div class="al-type">${icon} ${g.type}</div>
+            ${count>1?`<span class="al-count">×${count} days</span>`:''}
+            <span class="al-chevron bi bi-chevron-down"></span>
+          </div>
+          <div class="al-group-body" style="display:${idx===0?'block':'none'}">
+            <div class="al-days">${dayRange}</div>
+            <div class="al-msg">${g.msg}</div>
+            <span class="al-action">💡 ${g.action}</span>
+          </div>`;
+        list.appendChild(div);
+        if(idx===0) div.classList.add('open');
+      });
+    }
+  }
+
+  // Crop grid
+  if(d.crops){
+    const grid=document.getElementById('crop-grid');
+    grid.innerHTML=d.crops.map((r,i)=>{
+      const em=EMOJI[r.crop.toLowerCase()]||'🌱';
+      const warns=r.warn?r.warn.map(w=>`<div class="cc-warn">⚠ ${w}</div>`).join(''):''
+      return `<div class="crop-card${i===0?' style="border-color:#1B5E2F"':''}">
+        <div class="cc-rank">${i+1}</div>
+        <span class="cc-emoji">${em}</span>
+        <div class="cc-name">${r.crop}</div>
+        <div class="cc-season">${r.season}</div>
+        <div class="cc-score-wrap">
+          <div class="cc-bar"><div class="cc-bar-fill" style="width:${r.score}%"></div></div>
+          <div class="cc-score-num">${r.score}</div>
+        </div>
+        <div class="cc-details">
+          <div class="cc-det-row"><span>Water</span><span>${r.water}</span></div>
+          <div class="cc-det-row"><span>Yield</span><span>${r.yield} t/ha</span></div>
+          <div class="cc-det-row"><span>MSP</span><span>₹${r.msp}/qtl</span></div>
+          <div class="cc-det-row"><span>Revenue/ha</span><span>₹${r.revenue}</span></div>
+        </div>
+        ${warns?`<div class="cc-warns">${warns}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── CHATBOT ───────────────────────────────────────────────────────────────────
+document.getElementById('chat-toggle').addEventListener('click',()=>{
+  const w=document.getElementById('chat-window');
+  w.classList.toggle('open');
+  if(w.classList.contains('open')&&!w.dataset.init){
+    addMsg(
+      `Namaste! 🙏 I'm your Kisan Assistant — now with live data for ${CURRENT_CITY}!\n\n` +
+      `Try asking:\n` +
+      `• "What's the weather today?"\n` +
+      `• "Show me the 7-day forecast"\n` +
+      `• "Weather in Delhi"\n` +
+      `• "Top crops in Gujarat"\n` +
+      `• "Tell me about wheat"\n` +
+      `• "My soil pH is 6.5" (updates your profile)\n\n` +
+      `What would you like to know?`,
+      false
+    );
+    w.dataset.init='1';
+  }
+});
+document.getElementById('chat-close').addEventListener('click',()=>
+  document.getElementById('chat-window').classList.remove('open'));
+
+function addMsg(text,isUser){
+  const box=document.getElementById('chat-msgs');
+  const el=document.createElement('div');
+  el.textContent=text;
+  el.className=isUser?'msg-user':'msg-bot';
+  box.insertBefore(el,document.getElementById('typing'));
+  box.scrollTop=box.scrollHeight;
+}
+function showTyping(){document.getElementById('typing').style.display='block';}
+function hideTyping(){document.getElementById('typing').style.display='none';}
+function ask(q){document.getElementById('cinp').value=q;sendMsg();}
+
+async function handleSoilUpdate(msg){
+  const lo=msg.toLowerCase();
+  const phm=msg.match(/ph\s*(?:is|=|:)?\s*(\d+\.?\d*)/i)||msg.match(/(\d+\.?\d*)\s*ph/i);
+  const mom=msg.match(/moisture\s*(?:is|=|:)?\s*(\d+\.?\d*)/i)||msg.match(/(\d+)\s*%?\s*moisture/i);
+  if(!phm&&!mom)return false;
+  if(lo.includes('how')||lo.includes('what')||lo.includes('why'))return false;
+  const pH=phm?parseFloat(phm[1]):null;
+  const moist=mom?parseFloat(mom[1]):null;
+  if(pH&&(pH<4||pH>9)){addMsg('pH should be between 4 and 9.',false);return true;}
+  if(moist&&(moist<0||moist>100)){addMsg('Moisture should be between 0 and 100%.',false);return true;}
+  try{
+    const r=await fetch('/update-soil/',{
+      method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body:JSON.stringify({soilPH:pH,soilMoist:moist})
+    });
+    const d=await r.json();
+    if(d.status==='ok'){
+      let m='✅ ';
+      if(pH)    m+=`Soil pH ${d.soilPH} noted. `;
+      if(moist) m+=`Moisture ${d.soilMoist}% noted. `;
+      m+='Crop recommendations updated.';
+      addMsg(m,false);
+      if(d.crops){updateDashboard({crops:d.crops});}
+    }
+  }catch(e){addMsg('Could not update soil data.',false);}
+  return true;
+}
+
+async function sendMsg(){
+  const inp=document.getElementById('cinp');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  addMsg(msg,true);
+  inp.value='';
+  showTyping();
+
+  // Client-side soil update handler (fast path — no server round-trip for pure soil updates)
+  const handled=await handleSoilUpdate(msg);
+  if(handled){hideTyping();return;}
+
+  try{
+    const r=await fetch('/process-message/',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':CSRF},
+      body:'message='+encodeURIComponent(msg)
+    });
+    const d=await r.json();
+    hideTyping();
+    addMsg(d.response||'Sorry, could not get a response.',false);
+  }catch(e){
+    hideTyping();
+    addMsg('Connection error — please try again.',false);
+  }
+}
+document.getElementById('cinp').addEventListener('keypress',e=>{if(e.key==='Enter')sendMsg();});
+
+// ── ON PAGE LOAD ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  buildAlertList();
+});
+</script>
+</body>
+</html>

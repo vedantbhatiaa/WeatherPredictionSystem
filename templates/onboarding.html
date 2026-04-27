@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KisanMausam — Setup Your Farm</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#F5F7F1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.ow{width:100%;max-width:600px;background:#fff;border-radius:28px;box-shadow:0 10px 40px rgba(27,94,47,.12);overflow:hidden}
+.op{height:4px;background:#E2EAE3}.ob{height:4px;background:#1B5E2F;transition:width .4s}
+.ohdr{padding:22px 30px 0;display:flex;align-items:center;gap:12px}
+.osteps{display:flex;gap:8px;align-items:center}
+.osd{width:28px;height:28px;border-radius:50%;border:2px solid #E2EAE3;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#8FA690;font-family:'Outfit',sans-serif;transition:.3s}
+.osd.done{background:#1B5E2F;border-color:#1B5E2F;color:#fff}
+.osd.active{border-color:#1B5E2F;color:#1B5E2F}
+.osl{width:22px;height:2px;background:#E2EAE3;transition:.3s}.osl.done{background:#1B5E2F}
+.oskip{margin-left:auto;font-size:.75rem;color:#8FA690;background:none;border:none;cursor:pointer}
+.obd{padding:24px 30px 28px}
+.oq{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;color:#1C2B1E;line-height:1.2;margin-bottom:7px}
+.osub{font-size:.86rem;color:#4A6550;line-height:1.6;margin-bottom:20px}
+.oi{width:100%;padding:12px 15px;border:1.5px solid #E2EAE3;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.9rem;color:#1C2B1E;outline:none;margin-bottom:12px;background:#fff;transition:.2s}
+.oi:focus{border-color:#3D9B63}
+/* FIX 1 — City selector after state */
+.city-section{margin-top:4px;margin-bottom:12px;display:none}
+.city-section.show{display:block}
+.city-label{font-size:.75rem;font-weight:700;color:#4A6550;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;display:block}
+.city-hint{font-size:.7rem;color:#8FA690;margin-top:5px;line-height:1.5}
+.city-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
+.city-chip{padding:7px 13px;border:1.5px solid #E2EAE3;border-radius:100px;background:#fff;cursor:pointer;font-size:.8rem;font-weight:600;color:#4A6550;transition:.2s}
+.city-chip:hover{border-color:#81C784;color:#1B5E2F}
+.city-chip.on{background:#E8F5E9;border-color:#3D9B63;color:#1B5E2F}
+.cchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.cch{display:flex;align-items:center;gap:6px;padding:8px 14px;border:2px solid #E2EAE3;border-radius:100px;background:#fff;cursor:pointer;font-size:.83rem;font-weight:600;color:#4A6550;transition:.2s}
+.cch:hover{border-color:#81C784;color:#1B5E2F}
+.cch.on{background:#E8F5E9;border-color:#3D9B63;color:#1B5E2F}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.sc{padding:15px;border:2px solid #E2EAE3;border-radius:14px;cursor:pointer;text-align:center;background:#fff;transition:.2s}
+.sc:hover{border-color:#81C784}.sc.on{background:#E8F5E9;border-color:#3D9B63}
+.sc .si{font-size:1.8rem;margin-bottom:6px;display:block}
+.sc .sn{font-family:'Outfit',sans-serif;font-size:.86rem;font-weight:700;color:#1C2B1E}
+.sc .sd{font-size:.68rem;color:#4A6550;margin-top:2px}
+.sc.on .sn{color:#1B5E2F}
+.srow{display:flex;gap:10px;margin-bottom:16px}
+.srow input{flex:1;padding:12px 14px;border:1.5px solid #E2EAE3;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.9rem;outline:none;color:#1C2B1E}
+.srow select{width:110px;padding:12px 10px;border:1.5px solid #E2EAE3;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.84rem;outline:none;cursor:pointer;color:#1C2B1E;appearance:none;background:#fff}
+.ig{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ic{padding:12px 8px;border:2px solid #E2EAE3;border-radius:12px;cursor:pointer;text-align:center;background:#fff;transition:.2s}
+.ic:hover{border-color:#81C784}.ic.on{background:#E8F5E9;border-color:#3D9B63}
+.ic .ii{font-size:1.4rem;margin-bottom:4px;display:block}
+.ic .il{font-size:.68rem;font-weight:700;color:#4A6550}
+.ic.on .il{color:#1B5E2F}
+.soilg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.soc{padding:14px;border:2px solid #E2EAE3;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:11px;background:#fff;transition:.2s}
+.soc:hover{border-color:#81C784}.soc.on{background:#E8F5E9;border-color:#3D9B63}
+.sdot{width:32px;height:32px;border-radius:50%;flex-shrink:0}
+.soc .snn{font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:700;color:#1C2B1E}
+.soc .sds{font-size:.68rem;color:#4A6550;margin-top:1px}
+.soc.on .snn{color:#1B5E2F}
+.optsoi{background:#F5F7F1;border-radius:10px;padding:12px 14px;margin-top:4px}
+.optsoi .ol{font-size:.73rem;font-weight:700;color:#4A6550;margin-bottom:9px}
+.optsoi .orow{display:flex;gap:10px}
+.optsoi input{flex:1;padding:9px 12px;border:1.5px solid #E2EAE3;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.86rem;outline:none;color:#1C2B1E;background:#fff}
+.optsoi .hint{font-size:.66rem;color:#8FA690;margin-top:7px;line-height:1.5}
+.onav{display:flex;justify-content:space-between;margin-top:24px}
+.bbk{padding:10px 19px;background:transparent;border:1.5px solid #E2EAE3;border-radius:10px;font-size:.86rem;font-weight:600;color:#4A6550;cursor:pointer;transition:.2s}
+.bbk:hover{border-color:#4A6550}
+.bnx{padding:10px 24px;background:#1B5E2F;color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;transition:.2s}
+.bnx:hover{background:#2E7D52}
+.bnx.fin{background:#3D9B63}
+.osc{display:none;animation:sin .28s ease}
+.osc.active{display:block}
+@keyframes sin{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div class="ow">
+  <div class="op"><div class="ob" id="obar" style="width:20%"></div></div>
+  <div class="ohdr">
+    <div class="osteps">
+      <div class="osd active" id="s1">1</div><div class="osl" id="l1"></div>
+      <div class="osd" id="s2">2</div><div class="osl" id="l2"></div>
+      <div class="osd" id="s3">3</div><div class="osl" id="l3"></div>
+      <div class="osd" id="s4">4</div><div class="osl" id="l4"></div>
+      <div class="osd" id="s5">5</div>
+    </div>
+    <button class="oskip" onclick="skip()">Skip for now</button>
+  </div>
+  <div class="obd">
+
+    <!-- STEP 1: State + City -->
+    <div class="osc active" id="sc1">
+      <div class="oq">Welcome! 🙏 Which state are you farming in?</div>
+      <div class="osub">This helps us show region-specific crop recommendations, alerts, and accurate weather data for your area.</div>
+
+      <select class="oi" id="ob-state" onchange="onStateChange(this.value)">
+        <option value="">Select your state</option>
+        <option value="Maharashtra">Maharashtra</option>
+        <option value="Punjab">Punjab</option>
+        <option value="Haryana">Haryana</option>
+        <option value="Uttar Pradesh">Uttar Pradesh</option>
+        <option value="Madhya Pradesh">Madhya Pradesh</option>
+        <option value="Rajasthan">Rajasthan</option>
+        <option value="Gujarat">Gujarat</option>
+        <option value="Karnataka">Karnataka</option>
+        <option value="Tamil Nadu">Tamil Nadu</option>
+        <option value="Andhra Pradesh">Andhra Pradesh</option>
+        <option value="Telangana">Telangana</option>
+        <option value="Bihar">Bihar</option>
+        <option value="West Bengal">West Bengal</option>
+        <option value="Odisha">Odisha</option>
+        <option value="Himachal Pradesh">Himachal Pradesh</option>
+        <option value="Uttarakhand">Uttarakhand</option>
+        <option value="Chhattisgarh">Chhattisgarh</option>
+        <option value="Jharkhand">Jharkhand</option>
+        <option value="Assam">Assam</option>
+        <option value="Kerala">Kerala</option>
+        <option value="Other">Other / Delhi</option>
+      </select>
+
+      <!-- FIX 1 — City selection from dataset cities -->
+      <div class="city-section" id="city-section">
+        <span class="city-label">Select your nearest city (for weather data)</span>
+        <div class="city-grid" id="city-grid"></div>
+        <div class="city-hint">
+          Select the nearest city to your farm from above.
+        </div>
+      </div>
+
+      <div class="onav">
+        <div></div>
+        <button class="bnx" onclick="next(1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Crops -->
+    <div class="osc" id="sc2">
+      <div class="oq">What are you growing right now? 🌾</div>
+      <div class="osub">Select all crops on your farm — alerts and recommendations will be specific to these.</div>
+      <div class="cchips" id="ob-crops"></div>
+      <div class="onav">
+        <button class="bbk" onclick="prev(2)">← Back</button>
+        <button class="bnx" onclick="next(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Crop stage -->
+    <div class="osc" id="sc3">
+      <div class="oq">What stage are your crops at? 🌱</div>
+      <div class="osub">Choose the stage most of your crops are in right now.</div>
+      <div class="sg">
+        <div class="sc" onclick="selS(this,'Sowing')"><span class="si">🌱</span><div class="sn">Just Sowing</div><div class="sd">Seeds in ground, early sprouts</div></div>
+        <div class="sc" onclick="selS(this,'Vegetative')"><span class="si">🌿</span><div class="sn">Growing</div><div class="sd">Plants actively growing</div></div>
+        <div class="sc" onclick="selS(this,'Flowering')"><span class="si">🌸</span><div class="sn">Flowering</div><div class="sd">Flowers out, pods forming</div></div>
+        <div class="sc" onclick="selS(this,'Harvest')"><span class="si">🌾</span><div class="sn">Near Harvest</div><div class="sd">Ready to harvest soon</div></div>
+      </div>
+      <div class="onav">
+        <button class="bbk" onclick="prev(3)">← Back</button>
+        <button class="bnx" onclick="next(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Farm size + irrigation -->
+    <div class="osc" id="sc4">
+      <div class="oq">Tell us about your farm 🏞</div>
+      <div class="osub">Used to personalise your advisory. All fields optional.</div>
+      <div class="srow">
+        <input type="number" id="ob-size" placeholder="Farm size e.g. 2.5" min="0.1" step="0.1">
+        <select id="ob-unit"><option value="acres">Acres</option><option value="bigha">Bigha</option><option value="hectares">Hectares</option></select>
+      </div>
+      <div style="font-size:.74rem;color:#4A6550;font-weight:700;margin-bottom:8px">Irrigation source</div>
+      <div class="ig">
+        <div class="ic" onclick="selI(this,'rainfed')"><span class="ii">🌧</span><div class="il">Rain-fed</div></div>
+        <div class="ic" onclick="selI(this,'borewell')"><span class="ii">🚿</span><div class="il">Borewell</div></div>
+        <div class="ic" onclick="selI(this,'canal')"><span class="ii">🏞</span><div class="il">Canal</div></div>
+        <div class="ic" onclick="selI(this,'drip')"><span class="ii">💧</span><div class="il">Drip</div></div>
+      </div>
+      <div class="onav">
+        <button class="bbk" onclick="prev(4)">← Back</button>
+        <button class="bnx" onclick="next(4)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: Soil -->
+    <div class="osc" id="sc5">
+      <div class="oq">What's your soil like? 🧪</div>
+      <div class="osub">Choose by colour — you can update this anytime via the chat.</div>
+      <div class="soilg">
+        <div class="soc" onclick="selSo(this,'black')"><div class="sdot" style="background:#3d2b1f"></div><div><div class="snn">Black / Cotton</div><div class="sds">Dark, sticky — MH, MP</div></div></div>
+        <div class="soc" onclick="selSo(this,'red')"><div class="sdot" style="background:#a0522d"></div><div><div class="snn">Red / Laterite</div><div class="sds">Reddish-brown — KA, AP</div></div></div>
+        <div class="soc" onclick="selSo(this,'alluvial')"><div class="sdot" style="background:#c9a96e"></div><div><div class="snn">Alluvial / Sandy</div><div class="sds">Light tan, fertile — UP, PB</div></div></div>
+        <div class="soc" onclick="selSo(this,'loamy')"><div class="sdot" style="background:#7b6d3c"></div><div><div class="snn">Loamy / Mixed</div><div class="sds">Brown, balanced, versatile</div></div></div>
+      </div>
+      <div class="optsoi">
+        <div class="ol">Optional — adds precision to crop recommendations:</div>
+        <div class="orow">
+          <div><label style="font-size:.68rem;color:#8FA690;font-weight:700;display:block;margin-bottom:4px">Soil pH (4–9)</label><input id="ob-ph" type="number" placeholder="e.g. 6.5" min="4" max="9" step="0.1"></div>
+          <div><label style="font-size:.68rem;color:#8FA690;font-weight:700;display:block;margin-bottom:4px">Moisture %</label><input id="ob-moist" type="number" placeholder="e.g. 45" min="0" max="100"></div>
+        </div>
+        <div class="hint">💬 You can also say "my soil pH is 6.5" in the Kisan Assistant to update this anytime.</div>
+      </div>
+      <div class="onav">
+        <button class="bbk" onclick="prev(5)">← Back</button>
+        <button class="bnx fin" onclick="finish()">✓ Show My Dashboard</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// FIX 1 — Dataset cities per state (only cities with ERA5 data or strong API support)
+const STATE_CITIES = {
+  'Maharashtra':      ['Mumbai','Pune','Nagpur','Nashik','Aurangabad','Kolhapur','Solapur'],
+  'Punjab':           ['Ludhiana','Amritsar','Chandigarh','Jalandhar'],
+  'Haryana':          ['Hisar','Rohtak','Karnal','Ambala','Panipat'],
+  'Uttar Pradesh':    ['Lucknow','Agra','Varanasi','Kanpur','Meerut','Prayagraj','Bareilly'],
+  'Madhya Pradesh':   ['Bhopal','Indore','Gwalior','Jabalpur','Ujjain'],
+  'Rajasthan':        ['Jaipur','Jodhpur','Udaipur','Kota','Ajmer','Bikaner'],
+  'Gujarat':          ['Ahmedabad','Surat','Vadodara','Rajkot','Gandhinagar','Bhavnagar'],
+  'Karnataka':        ['Bengaluru','Mysuru','Hubli','Mangaluru','Belgaum'],
+  'Tamil Nadu':       ['Chennai','Coimbatore','Madurai','Trichy','Salem'],
+  'Andhra Pradesh':   ['Visakhapatnam','Vijayawada','Guntur','Tirupati'],
+  'Telangana':        ['Hyderabad','Warangal','Nizamabad'],
+  'Bihar':            ['Patna','Gaya','Muzaffarpur','Bhagalpur'],
+  'West Bengal':      ['Kolkata','Howrah','Durgapur','Asansol','Siliguri'],
+  'Odisha':           ['Bhubaneswar','Cuttack','Puri'],
+  'Himachal Pradesh': ['Shimla','Manali','Dharamshala'],
+  'Uttarakhand':      ['Dehradun','Haridwar','Roorkee'],
+  'Chhattisgarh':     ['Raipur','Bilaspur','Bhilai'],
+  'Jharkhand':        ['Ranchi','Jamshedpur','Dhanbad'],
+  'Assam':            ['Guwahati','Dibrugarh','Silchar'],
+  'Kerala':           ['Kochi','Thiruvananthapuram','Kozhikode','Thrissur','Kollam'],
+  'Other':            ['Delhi','Noida','Gurgaon','Faridabad'],
+};
+
+// Default city for each state (used if user doesn't pick a city)
+const STATE_DEFAULT = {
+  'Maharashtra':'Mumbai','Punjab':'Ludhiana','Haryana':'Hisar',
+  'Uttar Pradesh':'Lucknow','Madhya Pradesh':'Bhopal','Rajasthan':'Jaipur',
+  'Gujarat':'Ahmedabad','Karnataka':'Bengaluru','Tamil Nadu':'Chennai',
+  'Andhra Pradesh':'Vijayawada','Telangana':'Hyderabad','Bihar':'Patna',
+  'West Bengal':'Kolkata','Odisha':'Bhubaneswar','Himachal Pradesh':'Shimla',
+  'Uttarakhand':'Dehradun','Chhattisgarh':'Raipur','Jharkhand':'Ranchi',
+  'Assam':'Guwahati','Kerala':'Kochi','Other':'Delhi',
+};
+
+const RC = {
+  'Maharashtra':   ['Wheat','Soybean','Cotton','Onion','Tomato','Chickpea','Sugarcane','Groundnut'],
+  'Punjab':        ['Wheat','Rice','Maize','Cotton','Mustard','Potato','Chickpea'],
+  'Haryana':       ['Wheat','Rice','Mustard','Cotton','Sugarcane','Bajra','Maize'],
+  'Uttar Pradesh': ['Wheat','Rice','Sugarcane','Potato','Mustard','Maize','Onion'],
+  'Madhya Pradesh':['Soybean','Wheat','Cotton','Chickpea','Maize','Mustard','Groundnut'],
+  'Rajasthan':     ['Bajra','Wheat','Mustard','Groundnut','Maize','Chickpea'],
+  'Gujarat':       ['Cotton','Groundnut','Wheat','Sugarcane','Maize','Soybean','Onion'],
+  'Karnataka':     ['Rice','Maize','Cotton','Sugarcane','Groundnut','Tomato','Onion'],
+  'Tamil Nadu':    ['Rice','Sugarcane','Cotton','Groundnut','Tomato','Maize'],
+  'default':       ['Wheat','Rice','Cotton','Soybean','Onion','Tomato','Chickpea','Groundnut','Maize','Bajra'],
+};
+const em = {
+  Wheat:'🌾',Rice:'🍚',Cotton:'🌿',Soybean:'🫘',Sugarcane:'🎋',Onion:'🧅',
+  Tomato:'🍅',Maize:'🌽',Chickpea:'🌱',Groundnut:'🥜',Bajra:'🌾',
+  Potato:'🥔',Mustard:'🌻',Cumin:'🌿',
+};
+
+const ob = {state:'', city:'', crops:[], stage:'', sizeAcres:1.4, irrigation:'', soilType:'', soilPH:null, soilMoist:null};
+let step = 1;
+
+// FIX 1 — Show city chips when state is selected
+function onStateChange(state) {
+  ob.state = state;
+  const section  = document.getElementById('city-section');
+  const grid     = document.getElementById('city-grid');
+
+  if (!state) {
+    section.classList.remove('show');
+    ob.city = '';
+    return;
+  }
+
+  const cities = STATE_CITIES[state] || [STATE_DEFAULT[state] || 'Mumbai'];
+  grid.innerHTML = cities.map(c =>
+    `<div class="city-chip" onclick="selCity(this,'${c}')">${c}</div>`
+  ).join('');
+
+  // Auto-select default city
+  ob.city = STATE_DEFAULT[state] || cities[0];
+  const chips = grid.querySelectorAll('.city-chip');
+  chips.forEach(ch => {
+    if (ch.textContent === ob.city) ch.classList.add('on');
+  });
+
+  section.classList.add('show');
+}
+
+function selCity(el, city) {
+  document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  ob.city = city;
+}
+
+function upd(n) {
+  document.getElementById('obar').style.width = (n/5*100)+'%';
+  for (let i = 1; i <= 5; i++) {
+    const s = document.getElementById('s'+i);
+    s.classList.remove('done','active');
+    if (i < n) { s.classList.add('done'); s.textContent='✓'; }
+    if (i === n) { s.classList.add('active'); s.textContent=i; }
+    if (i > n) { s.textContent=i; }
+    if (i < 5) document.getElementById('l'+i).classList.toggle('done', i < n);
+  }
+  document.querySelectorAll('.osc').forEach(c => c.classList.remove('active'));
+  document.getElementById('sc'+n).classList.add('active');
+  step = n;
+}
+
+function next(from) {
+  if (from === 1) {
+    ob.state = document.getElementById('ob-state').value || 'Maharashtra';
+    // Use selected city or default
+    if (!ob.city) ob.city = STATE_DEFAULT[ob.state] || 'Mumbai';
+    loadCrops(ob.state);
+  }
+  if (from < 5) upd(from+1);
+}
+
+function prev(from) { if (from > 1) upd(from-1); }
+
+function loadCrops(state) {
+  const crops = RC[state] || RC['default'];
+  document.getElementById('ob-crops').innerHTML = crops.map(c =>
+    `<div class="cch" onclick="tc(this,'${c}')"><span>${em[c]||'🌿'}</span> ${c}</div>`
+  ).join('');
+}
+
+function tc(el, n) {
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) { if (!ob.crops.includes(n)) ob.crops.push(n); }
+  else ob.crops = ob.crops.filter(c => c !== n);
+}
+
+function selS(el, v)  { document.querySelectorAll('.sc').forEach(c=>c.classList.remove('on')); el.classList.add('on'); ob.stage=v; }
+function selI(el, v)  { document.querySelectorAll('.ic').forEach(c=>c.classList.remove('on')); el.classList.add('on'); ob.irrigation=v; }
+function selSo(el, v) { document.querySelectorAll('.soc').forEach(c=>c.classList.remove('on')); el.classList.add('on'); ob.soilType=v; }
+
+async function finish() {
+  const sv = parseFloat(document.getElementById('ob-size').value) || 1.4;
+  const un = document.getElementById('ob-unit').value;
+  ob.sizeAcres = parseFloat((un==='hectares'?sv*2.47:un==='bigha'?sv*0.617:sv).toFixed(2));
+  const pv = parseFloat(document.getElementById('ob-ph').value);
+  const mv = parseFloat(document.getElementById('ob-moist').value);
+  if (!isNaN(pv) && pv>=4 && pv<=9)   ob.soilPH   = pv;
+  if (!isNaN(mv) && mv>=0 && mv<=100) ob.soilMoist = mv;
+
+  const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  try {
+    await fetch('/save-profile/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':csrf},
+      body: JSON.stringify(ob)
+    });
+  } catch(e) { console.warn('Profile save failed:', e); }
+  window.location.href = '/';
+}
+
+function skip() { window.location.href = '/'; }
+
+// Load default crops on page load
+loadCrops('Maharashtra');
+</script>
+</body>
+</html>
